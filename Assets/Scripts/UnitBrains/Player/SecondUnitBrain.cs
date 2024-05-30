@@ -29,6 +29,11 @@ namespace UnitBrains.Player
             {
                 var projectile = CreateProjectile(forTarget);
                 AddProjectileToList(projectile, intoList);
+
+                if (w > GetTemperature())
+                {
+                    break;
+                }
             }
 
             ///////////////////////////////////////
