@@ -57,14 +57,14 @@ namespace UnitBrains.Player
             float min = float.MaxValue;
             Vector2Int NearEnemy = Vector2Int.zero;
 
-            if (result.Count > 0)
+           if (result.Count == 0)
             {
                 return result;
             }
 
             foreach (var target in result)
             {
-                if (min > DistanceToOwnBase(target))
+                if (min >= DistanceToOwnBase(target))
 
                 min = DistanceToOwnBase(target);
                 NearEnemy = target;
