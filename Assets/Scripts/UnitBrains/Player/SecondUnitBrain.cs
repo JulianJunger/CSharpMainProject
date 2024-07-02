@@ -6,6 +6,7 @@ using Model.Runtime.Projectiles;
 using Unity.VisualScripting.YamlDotNet.Serialization;
 using UnityEngine;
 using UnityEngine.Video;
+using Utilities;
 
 namespace UnitBrains.Player
 {
@@ -17,6 +18,7 @@ namespace UnitBrains.Player
         private float _temperature = 0f;
         private float _cooldownTime = 0f;
         private bool _overheated;
+        public List<Vector2Int> Outreachable = new List<Vector2Int>();
         
         protected override void GenerateProjectiles(Vector2Int forTarget, List<BaseProjectile> intoList)
         {
@@ -44,7 +46,16 @@ namespace UnitBrains.Player
 
         public override Vector2Int GetNextStep()
         {
-            return base.GetNextStep();
+            Vector2Int target = Outreachable[0];
+            if (Outreachable.Count > 0 && !IsTargetInRange(target))
+            {
+                return unit.Pos.CalcNextStepTowards(target);
+            }
+            else
+            {
+                return unit.Pos;
+            }
+
         }
 
         protected override List<Vector2Int> SelectTargets()
@@ -52,27 +63,43 @@ namespace UnitBrains.Player
             ///////////////////////////////////////
             // Homework 1.4 (1st block, 4rd module)
             ///////////////////////////////////////
-            
-            List<Vector2Int> result = GetReachableTargets();
+
+            List<Vector2Int> result = new List<Vector2Int>();
             float min = float.MaxValue;
             Vector2Int NearEnemy = Vector2Int.zero;
 
-           if (result.Count == 0)
+            foreach (var target in GetAllTargets())
+            {
+                if (min >= DistanceToOwnBase(target))
+                {
+                    min = DistanceToOwnBase(target);
+                    NearEnemy = target;
+                }
+            }
+
+            if (IsTargetInRange(NearEnemy))
+            {
+                result.Add(NearEnemy);
+            }
+            else
+            {
+                Outreachable.Add(NearEnemy);
+            }
+
+            if (result.Count == 0 && Outreachable.Count == 0)
+            {
+                if (IsTargetInRange(runtimeModel.RoMap.Bases[IsPlayerUnitBrain ? RuntimeModel.BotPlayerId : RuntimeModel.PlayerId]))
+                {
+                    result.Add(runtimeModel.RoMap.Bases[IsPlayerUnitBrain ? RuntimeModel.BotPlayerId : RuntimeModel.PlayerId]);
+                    return result;
+                }
+                Outreachable.Add(runtimeModel.RoMap.Bases[IsPlayerUnitBrain ? RuntimeModel.BotPlayerId : RuntimeModel.PlayerId]);
+                return result;
+            }
+            else
             {
                 return result;
             }
-
-            foreach (var target in result)
-            {
-                if (min >= DistanceToOwnBase(target))
-
-                min = DistanceToOwnBase(target);
-                NearEnemy = target;
-            }
-            result.Clear();
-            result.Add(NearEnemy);
-            return result;
-
             ///////////////////////////////////////
         }
 
